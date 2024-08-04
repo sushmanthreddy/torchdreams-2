@@ -82,3 +82,19 @@ def clip_percentile(array, percentile=0.1):
         np.ndarray: The clipped array.
     """
     return np.clip(array, None, np.percentile(array, 100 - percentile))
+
+
+def linconv_reshape(x, ref):
+    """
+    Reshapes x to shape of y where x is shape (c) or (b,c) and y is either shape (b,c) or (b,c,h,w)
+    Args:
+        x (torch.Tensor): The input tensor to be reshaped.
+        ref (torch.Tensor): The reference tensor.
+    Returns:
+        torch.Tensor: The reshaped tensor.
+    """
+    if x.dim() == 1:
+        x = x.unsqueeze(0)
+    while x.dim() < ref.dim():
+        x = x.unsqueeze(dim=-1)
+    return x
