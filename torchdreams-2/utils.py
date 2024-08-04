@@ -68,3 +68,17 @@ def torch_to_numpy(tensor):
             array = np.moveaxis(array, 1, -1)
 
     return array.astype(np.float32)
+
+
+def clip_percentile(array, percentile=0.1):
+    """
+    Clip the values of an array at a specified percentile.
+
+    Args:
+        array (np.ndarray): The input array to be clipped.
+        percentile (float, optional): The percentile value for clipping. Defaults to 0.1.
+
+    Returns:
+        np.ndarray: The clipped array.
+    """
+    return np.clip(array, None, np.percentile(array, 100 - percentile))
