@@ -30,3 +30,16 @@ def _extract_act_pos(acts, h=None, w=None):
     h = shape[3] // 2 if h is None else h
     w = shape[4] // 2 if w is None else w
     return acts[:, :, :, h : h + 1, w : w + 1]
+
+
+def get_layer_names(model):
+    """
+    Extracts layer names from a PyTorch model and replaces dots with underscores.
+
+    Parameters:
+    model (torch.nn.Module): The PyTorch model.
+
+    Returns:
+    list: A list of modified layer names with dots replaced by underscores.
+    """
+    return [name.replace(".", "_") for name, _ in model.named_modules()]
