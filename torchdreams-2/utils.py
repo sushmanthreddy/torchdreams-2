@@ -43,3 +43,28 @@ def get_layer_names(model):
     list: A list of modified layer names with dots replaced by underscores.
     """
     return [name.replace(".", "_") for name, _ in model.named_modules()]
+
+
+def torch_to_numpy(tensor):
+    """
+    Convert a PyTorch tensor to a NumPy array.
+
+    Args:
+        tensor (torch.Tensor): The input tensor to be converted.
+
+    Returns:
+        np.ndarray: The converted NumPy array.
+    """
+    try:
+        array = tensor.detach().cpu().numpy()
+    except:
+        array = np.array(tensor)
+
+    if len(array.shape) == 3:
+        if array.shape[0] == 3:
+            array = np.moveaxis(array, 0, -1)
+    elif len(array.shape) == 4:
+        if array.shape[1] == 3:
+            array = np.moveaxis(array, 1, -1)
+
+    return array.astype(np.float32)
