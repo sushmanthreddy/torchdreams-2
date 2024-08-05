@@ -15,34 +15,35 @@ default_img_size = (512, 512)
 default_model_input_range = (-2, 2)
 
 
-def box_crop_2(image_tensor, box_min_size=0.05, box_max_size=0.99):
+def box_crop_2(
+    image_tensor, box_min_size=0.05, box_max_size=0.99, aspect_ratio_range=(0.75, 1.33)
+):
     """
     Crop a random box from an image tensor.
 
     Args:
         image_tensor (torch.Tensor): The input image tensor.
-        box_min_size (float, optional): The minimum size of the box. Defaults to 0.05.
-        box_max_size (float, optional): The maximum size of the box. Defaults to 0.99.
+        box_min_size (float, optional): The minimum size of the box as a fraction of the image dimensions. Defaults to 0.05.
+        box_max_size (float, optional): The maximum size of the box as a fraction of the image dimensions. Defaults to 0.99.
+        aspect_ratio_range (tuple, optional): The range of aspect ratios for the crop box. Defaults to (0.75, 1.33).
 
     Returns:
         torch.Tensor: The cropped image tensor.
     """
-    image = image_tensor
-    batch_size, num_channels, image_width, image_height = image.shape
 
-    box_width_fraction = torch.rand(1) * (box_max_size - box_min_size) + box_min_size
-    box_height_fraction = box_width_fraction
-
-    max_x0_fraction = 1 - box_width_fraction
-    max_y0_fraction = 1 - box_height_fraction
-    x0_fraction = torch.rand(1) * max_x0_fraction
-    y0_fraction = torch.rand(1) * max_y0_fraction
-
-    x_start = int(x0_fraction * image_width)
-    x_end = int((x0_fraction + box_width_fraction) * image_width)
-    y_start = int(y0_fraction * image_height)
-    y_end = int((y0_fraction + box_height_fraction) * image_height)
-
-    cropped_image = image[:, :, x_start:x_end, y_start:y_end]
+    batch_size, num_channels, image_height, image_width = image_tensor.shape
+    box_area_fraction = torch.rand(1) * (box_max_size - box_min_size) + box_min_size
+    aspect_ratio = (
+        torch.rand(1) * (aspect_ratio_range[1] - aspect_ratio_range[0])
+        + aspect_ratio_range[0]
+    )
+    box_area = box_area_fraction * image_height * image_width
+    box_height = int(torch.sqrt(box_area / aspect_ratio).item())
+    box_width = int((box_height * aspect_ratio).item())
+    box_height = min(box_height, image_height)
+    box_width = min(box_width, image_width)
+    x0 = torch.randint(0, image_width - box_width + 1, (1,)).item()
+    y0 = torch.randint(0, image_height - box_height + 1, (1,)).item()
+    cropped_image = image_tensor[:, :, y0 : y0 + box_height, x0 : x0 + box_width]
 
     return cropped_image
