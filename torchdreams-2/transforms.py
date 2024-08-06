@@ -31,19 +31,36 @@ def box_crop_2(
         torch.Tensor: The cropped image tensor.
     """
 
+    # Extract dimensions of the input tensor
     batch_size, num_channels, image_height, image_width = image_tensor.shape
-    box_area_fraction = torch.rand(1) * (box_max_size - box_min_size) + box_min_size
+
+    # Compute box area fraction
+    box_area_fraction = (
+        torch.rand(1).item() * (box_max_size - box_min_size) + box_min_size
+    )
+
+    # Compute aspect ratio within the given range
     aspect_ratio = (
-        torch.rand(1) * (aspect_ratio_range[1] - aspect_ratio_range[0])
+        torch.rand(1).item() * (aspect_ratio_range[1] - aspect_ratio_range[0])
         + aspect_ratio_range[0]
     )
+
+    # Calculate the box area
     box_area = box_area_fraction * image_height * image_width
+
+    # Calculate box height and width based on the aspect ratio
     box_height = int(torch.sqrt(box_area / aspect_ratio).item())
-    box_width = int((box_height * aspect_ratio).item())
+    box_width = int(box_height * aspect_ratio)
+
+    # Ensure box dimensions do not exceed image dimensions
     box_height = min(box_height, image_height)
     box_width = min(box_width, image_width)
+
+    # Randomly select the top-left corner of the box
     x0 = torch.randint(0, image_width - box_width + 1, (1,)).item()
     y0 = torch.randint(0, image_height - box_height + 1, (1,)).item()
+
+    # Crop the image tensor
     cropped_image = image_tensor[:, :, y0 : y0 + box_height, x0 : x0 + box_width]
 
     return cropped_image
