@@ -67,3 +67,26 @@ def box_crop_2(
     cropped_image = image_tensor[:, :, y0 : y0 + box_height, x0 : x0 + box_width]
 
     return cropped_image
+
+
+def uniform_gaussian_noise(image_tensor, noise_std=0.02):
+    batch_size, channels, height, width = image_tensor.shape
+    device = image_tensor.device
+
+    noisy_image_tensor = torch.empty_like(image_tensor, device=device)
+
+    for i in range(batch_size):
+        # Create gaussian noise for each image
+        gaussian_noise = torch.normal(
+            mean=0.0, std=noise_std, size=(channels, height, width), device=device
+        )
+
+        # Create uniform noise for each image
+        uniform_noise = (
+            torch.rand(size=(channels, height, width), device=device) - 0.5
+        ) * noise_std
+
+        # Add the noise to the image tensor
+        noisy_image_tensor[i] = image_tensor[i] + gaussian_noise + uniform_noise
+
+    return noisy_image_tensor
