@@ -4,6 +4,7 @@ import os
 
 import torch
 import torch.nn.functional as F
+import torchvision.transforms as T
 from PIL import Image
 from torchvision.transforms import ToTensor
 
@@ -90,3 +91,39 @@ def uniform_gaussian_noise(image_tensor, noise_std=0.02):
         noisy_image_tensor[i] = image_tensor[i] + gaussian_noise + uniform_noise
 
     return noisy_image_tensor
+
+
+standard_box_transforms = [
+    lambda img: box_crop_2(img),
+    lambda img: uniform_gaussian_noise(img),
+]
+
+
+def resize(image_tensor, target_size=default_model_input_size):
+    """
+    Resize the image tensor to the target size using an efficient method.
+
+    Parameters:
+    image_tensor (torch.Tensor): Input image tensor of shape (C, H, W) or (N, C, H, W).
+    target_size (tuple): Desired output size (height, width).
+
+    Returns:
+    torch.Tensor: Resized image tensor.
+    """
+    # Check if the input tensor is a batch of images
+    is_batch = len(image_tensor.shape) == 4
+
+    if not is_batch:
+        # Add batch dimension if not present
+        image_tensor = image_tensor.unsqueeze(0)
+
+    resize_transform = T.Resize(
+        target_size, interpolation=T.InterpolationMode.BICUBIC, antialias=True
+    )
+    resized_image_tensor = resize_transform(image_tensor)
+
+    if not is_batch:
+        # Remove batch dimension if it was added
+        resized_image_tensor = resized_image_tensor.squeeze(0)
+
+    return resized_image_tensor
