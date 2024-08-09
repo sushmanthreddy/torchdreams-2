@@ -127,3 +127,22 @@ def resize(image_tensor, target_size=default_model_input_size):
         resized_image_tensor = resized_image_tensor.squeeze(0)
 
     return resized_image_tensor
+
+
+def range_normalize(image_tensor, normalization_range=default_model_input_range):
+    """
+    Range normalizeing function in image tensor
+
+    Args:
+
+
+    """
+
+    # Calculate scale and shift for normalization
+    scale = normalization_range[1] - normalization_range[0]
+    shift = normalization_range[0]
+
+    # Normalize the tensor
+    image_tensor = image_tensor * scale + shift
+
+    return image_tensor
